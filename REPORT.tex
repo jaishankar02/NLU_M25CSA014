@@ -1,0 +1,194 @@
+\documentclass[a4paper,12pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{graphicx}
+\usepackage{geometry}
+\usepackage{hyperref}
+\usepackage{booktabs}
+\usepackage{float}
+\usepackage{caption}
+
+\geometry{margin=1in}
+
+\title{\textbf{Automatic Classification of Sport vs. Politics Documents}}
+\author{Name: Jai Shankar Azad \\ Roll No: M25CSA014}
+\date{February 11, 2026}
+
+\begin{document}
+
+\maketitle
+
+\section{Introduction}
+
+For this assignment, I set out to solve a classic problem in Natural Language Processing (NLP): text classification. My specific goal was to design a system that could automatically read a text document and decide whether it was about \textbf{Sport} or \textbf{Politics}.
+
+I chose this binary classification task to understand how effectively standard machine learning algorithms can distinguish between two distinct topics based solely on vocabulary and statistical patterns, without relying on complex deep learning architectures.
+
+Steps I took for this project included:
+\begin{enumerate}
+    \item Collecting a suitable dataset.
+    \item Cleaning and preprocessing the text.
+    \item Experimenting with different ways to represent text as numbers (Feature Extraction).
+    \item Training and comparing multiple machine learning models.
+    \item Analyzing the results to see which approach worked best.
+\end{enumerate}
+
+\section{Dataset Collection \& Analysis}
+
+Finding the right data was the first step. I decided to use the \textbf{20 Newsgroups} dataset, which is a widely used benchmark in the machine learning community. It contains around 20,000 documents across 20 different topics.
+
+For my specific task, I didn't need all 20 categories. I wrote a Python script to filter and download only the relevant ones. It took a minute to fetch everything since I grabbed the original version, not the vector version.
+
+\subsection{The Categories I Chose}
+I selected the following sub-categories to form my two main classes:
+
+\begin{itemize}
+    \item \textbf{Class 0: Sport}
+    \begin{itemize}
+        \item \texttt{rec.sport.baseball}: Discussions about baseball games, players, and stats.
+        \item \texttt{rec.sport.hockey}: Similar discussions but focused on ice hockey.
+    \end{itemize}
+    \item \textbf{Class 1: Politics}
+    \begin{itemize}
+        \item \texttt{talk.politics.guns}: Debates about the Second Amendment and gun control.
+        \item \texttt{talk.politics.mideast}: Discussions on Middle Eastern politics.
+        \item \texttt{talk.politics.misc}: General political discourse.
+    \end{itemize}
+\end{itemize}
+
+\subsection{Data Statistics}
+After filtering, I ended up with a total dataset size of \textbf{4,618 documents}. I split this into:
+\begin{itemize}
+    \item \textbf{Training Set}: 2,772 documents (used to teach the models).
+    \item \textbf{Test Set}: 1,846 documents (held back to judge performance).
+\end{itemize}
+
+I spent some time looking at the data distribution. The classes were fairly balanced. I was a bit worried that the ``Politics'' class covered three distinct sub-topics while ``Sport'' only had two. I thought this might confuse the model, but as it turned out, the model handled it just fine.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.6\textwidth]{class_distribution.png}
+    \caption{Class Distribution in Training Set}
+    \label{fig:class_dist}
+\end{figure}
+
+\section{Methodology}
+
+My approach was to start simple and then add complexity. I used Python and the \texttt{scikit-learn} library for all my experiments.
+
+\subsection{Preprocessing}
+Before feeding text into any model, I had to clean it up. Real-world text is messy!
+\begin{itemize}
+    \item \textbf{Lowercasing}: I converted everything to lowercase. To a computer, ``Election'' and ``election'' are two totally different strings, and I wanted them treated as the same word.
+    \item \textbf{Removing Special Characters}: Punctuation and numbers generally introduce noise, so I stripped them out.
+    \item \textbf{Stop Words Removal}: I removed common English words like ``the'', ``and'', ``is''. These words appear everywhere and don't help us tell a sports article from a political one.
+\end{itemize}
+
+\subsection{Feature Extraction}
+Machines can't understand words; they understand numbers. So, I experimented with three different ways to convert my text documents into numerical vectors:
+
+\begin{enumerate}
+    \item \textbf{Bag of Words (BoW)}: This is the simplest method. It just counts how many times each word appears. If ``touchdown'' appears 5 times, that's a strong signal for Sport.
+    \item \textbf{TF-IDF (Term Frequency-Inverse Document Frequency)}: This is a bit smarter. It downweights words that appear in \emph{too many} documents (even if they aren't stop words) and highlights words that are unique to specific documents. I expected this to be my best performer.
+    \item \textbf{N-grams (Bi-grams)}: Instead of looking at single words, I looked at pairs of adjacent words (e.g., ``white house'', ``home run''). I thought this context would be crucial.
+\end{enumerate}
+
+\subsection{Models Trained}
+I didn't want to rely on just one algorithm, so I trained four different ones to compare them:
+
+\begin{itemize}
+    \item \textbf{Multinomial Naive Bayes (NB)}: This is the classic ``baseline'' for identifying text. It's based on probability and assumes that features are independent. It's usually very fast and surprisingly accurate.
+    \item \textbf{Logistic Regression (LR)}: Despite the name, this is a classification algorithm. It's very interpretable---we can easily see which words contribute to a ``Politics'' prediction.
+    \item \textbf{Support Vector Machine (Linear SVC)}: SVMs are famous for working well with high-dimensional data like text, where we have thousands of unique words (features).
+    \item \textbf{Random Forest}: I threw this in as a ``wildcard''. It uses hundreds of decision trees to vote on the class. It's usually robust but can be slower to train.
+\end{itemize}
+
+\section{Experimental Results}
+
+After training all the models, I ran them on the Test Set (the 1,846 documents the models had never seen before). The results were honestly shocking---I actually ran the evaluation cell twice just to be sure I wasn't seeing things.
+
+\subsection{Quantitative Comparison}
+Here is the breakdown of how each combination performed:
+
+\begin{table}[H]
+\centering
+\begin{tabular}{llcc}
+\toprule
+\textbf{Model} & \textbf{Feature Rep.} & \textbf{Accuracy} & \textbf{F1-Score} \\
+\midrule
+\textbf{Naive Bayes} & \textbf{Bag of Words} & \textbf{99.24\%} & \textbf{0.9923} \\
+SVM (Linear SVC) & TF-IDF & 98.92\% & 0.9889 \\
+Logistic Regression & TF-IDF & 98.54\% & 0.9850 \\
+Naive Bayes & TF-IDF & 98.43\% & 0.9839 \\
+Random Forest & TF-IDF & 97.83\% & 0.9779 \\
+Naive Bayes & N-grams (1,2) & 96.91\% & 0.9682 \\
+\bottomrule
+\end{tabular}
+\caption{Model Performance Comparison}
+\end{table}
+
+\subsection{Deep Dive into the Analysis}
+\begin{enumerate}
+    \item \textbf{The Surprise Winner}: I was betting on SVM or Logistic Regression with TF-IDF to win, but the humble \textbf{Naive Bayes with simple Bag of Words} took the crown with \textbf{99.24\% accuracy}. This is incredibly high. It basically means that out of 100 documents, it gets 99 right.
+    \item \textbf{BoW vs. TF-IDF}: It seems that for this specific task, raw word counts (BoW) were more informative than the weighted TF-IDF scores. My theory is that the ``Sport'' and ``Politics'' vocabularies are so distinct that we don't need to penalize frequent words; we just need to know if they are there.
+    \item \textbf{The ``Context'' Penalty}: I was disappointed that adding Bi-grams (N-grams) actually \emph{hurt} performance (dropping to $\sim$96.9\%). I realized later that this is likely due to the \textbf{Curse of Dimensionality}. Adding word pairs created way too many features (hundreds of thousands), making the data too sparse for the model to learn effectively given that we only had $\sim$2,700 training samples.
+\end{enumerate}
+
+\section{Visualization of Performance}
+I generated some plots to visualize these findings.
+
+\subsection{Top Predictive Keywords (Feature Importance)}
+To understand \emph{how} the model distinguishes between the two topics, I looked at the words with the highest ``log probability'' in the Naive Bayes model.
+\begin{itemize}
+    \item \textbf{Sport}: Words like ``game'', ``team'', ``year'', ``hockey'', ``baseball'' dominate.
+    \item \textbf{Politics}: Words like ``people'', ``gun'', ``government'', ``president'', ``law'' are strong indicators.
+\end{itemize}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1.0\textwidth]{top_keywords.png}
+    \caption{Top Predictive Keywords for Each Class}
+    \label{fig:keywords}
+\end{figure}
+
+\subsection{Accuracy Comparison (Zoomed In)}
+Since all models were above 96\%, I had to zoom the chart in to even see the differences!
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{model_accuracy_comparison.png}
+    \caption{Model Accuracy Comparison (Zoomed In)}
+    \label{fig:accuracy}
+\end{figure}
+
+\subsection{Multi-Metric Comparison}
+I wanted to ensure the high accuracy wasn't a fluke (e.g., predicting ``Sport'' for everything). I checked Precision (how precise the positive predictions were) and Recall (how many positive instances were caught). As you can see below, the metrics are rock solid across the board.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{multi_metric_comparison.png}
+    \caption{Multi-Metric Comparison}
+    \label{fig:multimetric}
+\end{figure}
+
+\subsection{Confusion Matrix}
+This was my favorite part. The Confusion Matrix for the best model shows that it made almost zero mistakes. It barely ever confused a political post for a sports one, or vice versa.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.6\textwidth]{cm_NB_BoW.png}
+    \caption{Confusion Matrix for Naive Bayes (BoW)}
+    \label{fig:cm}
+\end{figure}
+
+\section{Limitations \& Future Improvements}
+\begin{enumerate}
+    \item \textbf{Domain Specificity}: My model is trained on data from the 90s (Newsgroups). It probably knows a lot about ``Clinton'' and ``Gretzky'' but nothing about ``Trump'' or ``McDavid''. It needs modern data to be useful today.
+    \item \textbf{Binary Constraints}: Life isn't just Sport vs. Politics. If I fed this model a cooking recipe or a tech review, it would force it into one of these two buckets, which would be wrong. A ``None of the Above'' class is a necessary next step.
+\end{enumerate}
+
+\section{Conclusion}
+This project was a fantastic learning experience for me. I started with raw text and built a system that can classify documents with near-human accuracy ($>$99\%).
+
+The biggest takeaway for me was that \textbf{simpler is often better}. We often rush to use the most complex algorithms (like Deep Learning or Transformers), but for a defined problem like this, a simple Naive Bayes model with Bag of Words features was statistically the best and computationally the cheapest solution.
+
+\end{document}
