@@ -1,6 +1,6 @@
 __pycache__/
 *.pyc
-
+REPORT.tex
 venv/
 .DS_Store
 .ipynb_checkpoints/
