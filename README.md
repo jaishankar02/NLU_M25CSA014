@@ -115,3 +115,27 @@ While I'm proud of these results, I have to admit the system isn't perfect.
 This project was a fantastic learning experience for me. I started with raw text and built a system that can classify documents with near-human accuracy (>99%).
 
 The biggest takeaway for me was that **simpler is often better**. We often rush to use the most complex algorithms (like Deep Learning or Transformers), but for a defined problem like this, a simple Naive Bayes model with Bag of Words features was statistically the best and computationally the cheapest solution.
+
+---
+
+## 7. How to Run
+
+### Prerequisites & Dependencies
+Make sure you have Python installed along with the following libraries:
+*   `numpy`: For numerical operations.
+*   `matplotlib`: For generating plots.
+*   `seaborn`: For enhanced data visualization.
+*   `scikit-learn`: For machine learning models and data preprocessing.
+
+### Execution Instructions
+To run the classification experiments and generate the results, simply execute the main script:
+
+```bash
+python3 train.py
+```
+
+### Expected Output
+- The script will download the **20 Newsgroups** dataset automatically.
+- It will train and evaluate multiple models (Naive Bayes, SVM, Logistic Regression, Random Forest).
+- Summary metrics and classification reports will be printed to the console.
+- Visualizations (confusion matrices, accuracy comparisons, etc.) will be saved in the `output/` directory.
